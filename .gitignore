@@ -101,3 +101,6 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
+# other files
+draft.py
+product_page_data.csv
