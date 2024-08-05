@@ -16,7 +16,6 @@ soup = BeautifulSoup(html, "html.parser")  # create beautifulsoup object
 
 # Extract Data
 
-
 def find_the_tag_string(search_text, search_tag, search_next):
     search_field = soup.find(search_tag, string=search_text)
     search_field_value = search_field.find_next(search_next)
@@ -34,11 +33,11 @@ src_value = img_tag["src"]
 
 # Locate the tags that match the specified search string and tag type
 universal_product_code = find_the_tag_string("UPC", "th", "td")
-category = find_the_tag_string("Product Type", "th", "td")
 price_excluding_tax = find_the_tag_string("Price (excl. tax)", "th", "td")
 price_including_tax = find_the_tag_string("Price (incl. tax)", "th", "td")
 number_available = find_the_tag_string("Availability", "th", "td")
 product_description = find_the_tag_string("Product Description", "h2", "p")
+category = find_the_tag_string("Books", "a", "a")
 
 # Find the <p> tag with a class that starts with "star-rating"
 star_rating_p = soup.find("p", class_="star-rating")
