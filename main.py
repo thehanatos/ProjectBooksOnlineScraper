@@ -10,22 +10,14 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
-# Base URL of the website
-base_url = "https://books.toscrape.com/index.html"
-product_page_url = (
-    "https://books.toscrape.com/catalogue/sharp-objects_997/index.html"
-)
+base_url_img = "https://books.toscrape.com/"
+product_page_url = "https://books.toscrape.com/catalogue/sharp-objects_997/index.html"
 
 
-def open_and_read_url(url_to_open):
-    global page
-    global soup
-    page = requests.get(url_to_open)
-    soup = BeautifulSoup(page.content, "html.parser")
-
+page = requests.get(product_page_url)
+soup = BeautifulSoup(page.content, "html.parser")
 
 # Extract Data
-open_and_read_url(product_page_url)
 
 
 def get_title(soup):
@@ -39,7 +31,7 @@ def get_image_src(soup, title):
     """Find the image src based on the title's alt text."""
     img_tag = soup.find("img", alt=title)
     src_value = img_tag["src"]
-    src_value = urljoin(base_url, src_value)
+    src_value = urljoin(base_url_img, src_value)
     return src_value
 
 
@@ -98,4 +90,44 @@ products_data.append(product_info)
 df = pandas.DataFrame(products_data)
 # Write the DataFrame to a CSV file
 df.to_csv("product_page_data.csv", index=False)
-print("CSV file has been created with the specified headers.")
+print("CSV file has been created.")
+
+"""
+Phase 2: Extract the relevant data from the selected category page, capturing the following details for each product:
+product_page_url, universal_product_code (upc), title, price_including_tax, price_excluding_tax,
+number_available, product_description, category, review_rating, image_url
+After retrieving the data, save it to a CSV file using the above fields as column headers.
+"""
+# Phase 2 extract datqa for a category
+# https://books.toscrape.com/catalogue/category/books/fantasy_19/index.html
+# https://books.toscrape.com/catalogue/category/books/fantasy_19/page-2.html
+# https://books.toscrape.com/catalogue/category/books/fantasy_19/page-3.html
+base_url_book = "https://books.toscrape.com/catalogue/"
+category_books = (
+    "https://books.toscrape.com/catalogue/category/books/fantasy_19/index.html"
+)
+category_page = requests.get(category_books)
+soup = BeautifulSoup(category_page.content, "html.parser")
+books = soup.find_all("div", class_="image_container")
+
+# Extract all links within these containers
+books_links = []
+for book in books:
+    link = book.find("a")
+    if link and link.has_attr("href"):
+        link = (link["href"])[9:]
+        link = urljoin(base_url_book, link)  # tranform into urls
+        books_links.append(link)
+
+
+category_books_data = []
+
+for link in books_links:
+    page = requests.get(link)
+    soup = BeautifulSoup(page.content, "html.parser")
+    product_info = extract_product_info(soup)
+    category_books_data.append(product_info)
+
+df = pandas.DataFrame(category_books_data)
+df.to_csv("category_pages_data.csv", index=False)
+print("CSV file with Fantasy books info has been created.")
