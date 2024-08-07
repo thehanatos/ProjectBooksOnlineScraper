@@ -103,5 +103,4 @@ dmypy.json
 
 # other files
 draft.py
-product_page_data.csv
-category_pages_data.csv
+*.csv
