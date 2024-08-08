@@ -1,6 +1,6 @@
 """
 Phase 1: Extract the relevant data from the selected product page, capturing the following details:
-product_page_url, universal_product_code (upc), title, price_including_tax, price_excluding_tax,
+product_page_url, universal_product_code, title, price_including_tax, price_excluding_tax,
 number_available, product_description, category, review_rating, image_url
 After retrieving the data, save it to a CSV file using the above fields as column headers.
 """
@@ -13,16 +13,12 @@ from urllib.parse import urljoin
 from urllib.parse import urlparse
 
 
-# Extract Data
-
 base_url_site = "https://books.toscrape.com/"
 product_page_url = "https://books.toscrape.com/catalogue/sharp-objects_997/index.html"
 base_url_book = "https://books.toscrape.com/catalogue/"
 # Directory to save files
 image_dir = "book_images"
 csv_files_dir = "data"
-# Create directory if it doesn't exist
-
 
 def create_directories(folder):
     if not os.path.exists(folder):
@@ -130,8 +126,6 @@ def extract_product_info(soup):
     }
 
 
-# Transform Data
-
 book_data = []
 # Extract product info and add to the list
 product_info = extract_product_info(soup)
@@ -168,7 +162,7 @@ def download_image(image_url, save_dir, image_name):
     # Download the image
     response = requests.get(image_url)
     if response.status_code == 200:
-        # Combines the directory path (save_dir) with the image filename to create a full file path.
+        # Combines the directory path with the image filename to create a full file path.
         # Clean the image name to avoid invalid characters
         cleaned_image_name = clean_filename(image_name)
         image_path = os.path.join(save_dir, cleaned_image_name)
