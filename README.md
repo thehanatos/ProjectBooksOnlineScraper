@@ -24,7 +24,7 @@ This script is designed to scrape detailed information about books from an onlin
 1. Clone this repository:
 
    ```bash
-   git clone https://github.com/yourusername/ProjectBooksOnlineScraper.git
+   git clone git@github.com:thehanatos/ProjectBooksOnlineScraper.git
    ```
 
 2. Navigate to the project directory:
