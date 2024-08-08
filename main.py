@@ -4,7 +4,7 @@ product_page_url, universal_product_code (upc), title, price_including_tax, pric
 number_available, product_description, category, review_rating, image_url
 After retrieving the data, save it to a CSV file using the above fields as column headers.
 """
-
+import os
 import pandas
 import requests
 from bs4 import BeautifulSoup
@@ -17,7 +17,11 @@ from urllib.parse import urlparse
 base_url_site = "https://books.toscrape.com/"
 product_page_url = "https://books.toscrape.com/catalogue/sharp-objects_997/index.html"
 base_url_book = "https://books.toscrape.com/catalogue/"
-
+# Directory to save images
+image_dir = "book_images"
+# Create directory if it doesn't exist
+if not os.path.exists(image_dir):
+    os.makedirs(image_dir)
 
 def get_soup(url):
     """
@@ -127,7 +131,24 @@ category_books = (
     "https://books.toscrape.com/catalogue/category/books/fantasy_19/index.html"
 )
 
-
+def download_image(image_url, save_dir, image_name):
+    """
+    Download an image from a URL and save it to a specified directory.
+    """
+    # Download the image
+    response = requests.get(image_url)
+    if response.status_code == 200:
+        # Combines the directory path (save_dir) with the image filename to create a full file path.
+        image_path = os.path.join(save_dir, image_name) 
+        # Opens the file at the specified image_path in binary write mode ('wb'). 
+        # The with statement ensures that the file is properly closed after writing.
+        with open(image_path, 'wb') as file:
+            file.write(response.content)
+        print(f"Image saved: {image_path}")
+    else:
+        print(f"Failed to download image: {image_url}")
+        
+        
 def scrape_book_links_from_category(category_url):
     """
     Scrape all books from a given category page, including all subsequent pages.
@@ -169,6 +190,11 @@ def extract_books_data(books_links):
         product_info = extract_product_info(soup)
         product_info['product_page_url'] = link  # Add the URL of the book page
         category_books_data.append(product_info)
+        
+        # Download the image and save it locally
+        image_url = product_info['image_url']
+        image_name = get_title(soup) + ".jpg"
+        download_image(image_url, image_dir, image_name)
 
     return category_books_data
 
@@ -208,7 +234,7 @@ categories_div_links = categories_div_links[1:]
 category_links = []
 
 # Get all category links
-for cat_link in categories_div_links:  # Start from the second element
+for cat_link in categories_div_links: 
     if cat_link.has_attr("href"):
         full_link = urljoin(base_url_site, cat_link["href"])
         category_links.append(full_link)
