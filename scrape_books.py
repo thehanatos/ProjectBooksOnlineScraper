@@ -6,6 +6,7 @@ After retrieving the data, save it to a CSV file using the above fields as colum
 """
 import os
 import pandas
+import re
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
@@ -17,11 +18,29 @@ from urllib.parse import urlparse
 base_url_site = "https://books.toscrape.com/"
 product_page_url = "https://books.toscrape.com/catalogue/sharp-objects_997/index.html"
 base_url_book = "https://books.toscrape.com/catalogue/"
-# Directory to save images
+# Directory to save files
 image_dir = "book_images"
+csv_files_dir = "data"
 # Create directory if it doesn't exist
-if not os.path.exists(image_dir):
-    os.makedirs(image_dir)
+
+
+def create_directories(folder):
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+
+create_directories(image_dir)
+create_directories(csv_files_dir)
+
+
+def save_csv_to_data_folder(df, filename):
+    """
+    Save the DataFrame to a CSV file in the 'data' folder.
+    """
+    file_path = os.path.join(csv_files_dir, filename)
+    df.to_csv(file_path, index=False)
+    print(f"CSV file has been created as '{file_path}'.")
+
 
 def get_soup(url):
     """
@@ -87,10 +106,13 @@ def extract_product_info(soup):
     image_url = get_image_src(soup, title)
     product_page_url = get_url(soup)
     universal_product_code = find_the_tag_string(soup, "UPC", "th", "td")
-    price_excluding_tax = find_the_tag_string(soup, "Price (excl. tax)", "th", "td")
-    price_including_tax = find_the_tag_string(soup, "Price (incl. tax)", "th", "td")
+    price_excluding_tax = find_the_tag_string(
+        soup, "Price (excl. tax)", "th", "td")
+    price_including_tax = find_the_tag_string(
+        soup, "Price (incl. tax)", "th", "td")
     number_available = find_the_tag_string(soup, "Availability", "th", "td")
-    product_description = find_the_tag_string(soup, "Product Description", "h2", "p")
+    product_description = find_the_tag_string(
+        soup, "Product Description", "h2", "p")
     category = find_the_tag_string(soup, "Books", "a", "a")
     star_rating = extract_star_rating(soup)
 
@@ -109,6 +131,7 @@ def extract_product_info(soup):
 
 
 # Transform Data
+
 book_data = []
 # Extract product info and add to the list
 product_info = extract_product_info(soup)
@@ -116,39 +139,48 @@ book_data.append(product_info)
 # Convert the list of dictionaries into a pandas DataFrame
 df = pandas.DataFrame(book_data)
 # Write the DataFrame to a CSV file
-filename = (str(get_title(soup))+ "_data.csv")
-df.to_csv(filename, index=False)
-print(f"CSV file for the book '{filename}' has been created.")
+filename = (str(get_title(soup)) + "_data.csv")
+save_csv_to_data_folder(df, filename)
 
 """
-Phase 2: Extract the relevant data from all the pages of the category, capturing the following details for each product:
-product_page_url, universal_product_code (upc), title, price_including_tax, price_excluding_tax,
-number_available, product_description, category, review_rating, image_url
-After retrieving the data, save it to a CSV file using the above fields as column headers.
+Phase 2: Extract the relevant data from all the pages of the category.
 """
 
 category_books = (
     "https://books.toscrape.com/catalogue/category/books/fantasy_19/index.html"
 )
 
+
+def clean_filename(filename):
+    """
+    Replace or remove special characters from filenames that are not allowed in file paths.
+    """
+    return re.sub(r'[\\/*?:"<>|]', "", filename)
+
+
 def download_image(image_url, save_dir, image_name):
     """
     Download an image from a URL and save it to a specified directory.
     """
+    # Clean the image name to avoid invalid characters
+    cleaned_image_name = clean_filename(image_name)
+    image_path = os.path.join(save_dir, cleaned_image_name)
     # Download the image
     response = requests.get(image_url)
     if response.status_code == 200:
         # Combines the directory path (save_dir) with the image filename to create a full file path.
-        image_path = os.path.join(save_dir, image_name) 
-        # Opens the file at the specified image_path in binary write mode ('wb'). 
+        # Clean the image name to avoid invalid characters
+        cleaned_image_name = clean_filename(image_name)
+        image_path = os.path.join(save_dir, cleaned_image_name)
+        # Opens the file at the specified image_path in binary write mode ('wb').
         # The with statement ensures that the file is properly closed after writing.
         with open(image_path, 'wb') as file:
             file.write(response.content)
         print(f"Image saved: {image_path}")
     else:
         print(f"Failed to download image: {image_url}")
-        
-        
+
+
 def scrape_book_links_from_category(category_url):
     """
     Scrape all books from a given category page, including all subsequent pages.
@@ -190,7 +222,7 @@ def extract_books_data(books_links):
         product_info = extract_product_info(soup)
         product_info['product_page_url'] = link  # Add the URL of the book page
         category_books_data.append(product_info)
-        
+
         # Download the image and save it locally
         image_url = product_info['image_url']
         image_name = get_title(soup) + ".jpg"
@@ -217,14 +249,10 @@ category_books_data = extract_books_data(all_books)
 
 df = pandas.DataFrame(category_books_data)
 filename = generate_unique_filename(category_books)
-df.to_csv(filename, index=False)
-print(f"CSV file has been created as '{filename}'.")
+save_csv_to_data_folder(df, filename)
 
 """
-Phase 3: Extract the relevant data from all the pages of all the categories, capturing the following details for each product:
-product_page_url, universal_product_code (upc), title, price_including_tax, price_excluding_tax,
-number_available, product_description, category, review_rating, image_url
-After retrieving the data, save it to a CSV file using the above fields as column headers.
+Phase 3: Extract the relevant data from all the pages of all the categorie.
 """
 soup = get_soup(base_url_site)
 categories_div = soup.find("div", class_="side_categories")
@@ -234,12 +262,12 @@ categories_div_links = categories_div_links[1:]
 category_links = []
 
 # Get all category links
-for cat_link in categories_div_links: 
+for cat_link in categories_div_links:
     if cat_link.has_attr("href"):
         full_link = urljoin(base_url_site, cat_link["href"])
         category_links.append(full_link)
-        
-        
+
+
 for category_link in category_links:
     print(f"Scraping category: {category_link}")
     all_cat_books = scrape_book_links_from_category(category_link)
@@ -252,7 +280,4 @@ for category_link in category_links:
     # Convert the data to a DataFrame
     df = pandas.DataFrame(category_books_data)
     filename = generate_unique_filename(category_link)
-    df.to_csv(filename, index=False)
-    print(f"CSV file has been created as '{filename}'.")
-    
-    
+    save_csv_to_data_folder(df, filename)
