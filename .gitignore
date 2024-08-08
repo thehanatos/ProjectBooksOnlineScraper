@@ -104,3 +104,4 @@ dmypy.json
 # other files
 draft.py
 *.csv
+*.jpg
