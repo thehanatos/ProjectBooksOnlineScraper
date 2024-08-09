@@ -270,7 +270,6 @@ for cat_link in categories_div_links:
 for category_link in category_links:
     print(f"Scraping category: {category_link}")
     all_cat_books = scrape_book_links_from_category(category_link)
-    category_books_data = extract_books_data(all_cat_books)
     # soup object passed as an argument to retrieve correct data
     for book_link in all_cat_books:
         book_soup = get_soup(book_link)
