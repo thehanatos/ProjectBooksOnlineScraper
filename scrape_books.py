@@ -9,9 +9,7 @@ import pandas
 import re
 import requests
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
-from urllib.parse import urlparse
-
+from urllib.parse import urljoin, urlparse
 
 base_url_site = "https://books.toscrape.com/"
 product_page_url = "https://books.toscrape.com/catalogue/sharp-objects_997/index.html"
@@ -20,7 +18,11 @@ base_url_book = "https://books.toscrape.com/catalogue/"
 image_dir = "book_images"
 csv_files_dir = "data"
 
-def create_directories(folder):
+
+def create_directories(folder: str) -> None:
+    """
+    Create the directories for the data and the images if they don't exist.
+    """
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -29,7 +31,7 @@ create_directories(image_dir)
 create_directories(csv_files_dir)
 
 
-def save_csv_to_data_folder(df, filename):
+def save_csv_to_data_folder(df: pandas.DataFrame, filename: str) -> None:
     """
     Save the DataFrame to a CSV file in the 'data' folder.
     """
@@ -38,7 +40,7 @@ def save_csv_to_data_folder(df, filename):
     print(f"CSV file has been created as '{file_path}'.")
 
 
-def get_soup(url):
+def get_soup(url: str) -> BeautifulSoup:
     """
     Fetch the content of the given URL and parse it into a BeautifulSoup object.
     """
@@ -49,7 +51,7 @@ def get_soup(url):
     return soup
 
 
-def get_url(url):
+def get_url(url: str) -> str:
     """Returns the URL of the page being scraped from the soup object."""
     # In this case, the URL is already known, but we can simply return it
     return soup.current_url
@@ -58,14 +60,14 @@ def get_url(url):
 soup = get_soup(product_page_url)
 
 
-def get_title(soup):
+def get_title(soup: BeautifulSoup) -> str:
     """Extract and clean the title from the page."""
     # retrieve the string between the title tags and strips what's after the pipe
     title = soup.title.string.split("|")[0].strip()
     return title
 
 
-def get_image_src(soup, title):
+def get_image_src(soup: BeautifulSoup, title: str) -> str:
     """Find the image src based on the title's alt text."""
     img_tag = soup.find("img", alt=title)
     src_value = img_tag["src"]
@@ -73,7 +75,7 @@ def get_image_src(soup, title):
     return src_value
 
 
-def find_the_tag_string(soup, search_text, search_tag, search_next_tag):
+def find_the_tag_string(soup: BeautifulSoup, search_text: str, search_tag: str, search_next_tag: str) -> str:
     """Locate the sibling tag that matches the specified search text."""
     search_field = soup.find(search_tag, string=search_text)
     if search_field:
@@ -84,7 +86,7 @@ def find_the_tag_string(soup, search_text, search_tag, search_next_tag):
         return "Not found"
 
 
-def extract_star_rating(soup):
+def extract_star_rating(soup: BeautifulSoup) -> str:
     """
     Extract the star rating from a <p> tag with a class that starts with "star-rating".
     """
@@ -96,7 +98,7 @@ def extract_star_rating(soup):
     return review_rating
 
 
-def extract_product_info(soup):
+def extract_product_info(soup: BeautifulSoup) -> dict:
     """Extract product information from the soup object."""
     title = get_title(soup)
     image_url = get_image_src(soup, title)
@@ -145,16 +147,16 @@ category_books = (
 )
 
 
-def clean_filename(filename):
+def clean_filename(filename: str) -> str:
     """
     Replace or remove special characters from filenames that are not allowed in file paths.
     """
     return re.sub(r'[\\/*?:"<>|]', "", filename)
 
 
-def download_image(image_url, save_dir, image_name):
+def download_image(image_url: str, save_dir: str, image_name: str) -> None:
     """
-    Download an image from a URL and save it to a specified directory.
+    Download an image from an URL and save it to a specified directory.
     """
     # Clean the image name to avoid invalid characters
     cleaned_image_name = clean_filename(image_name)
@@ -175,7 +177,7 @@ def download_image(image_url, save_dir, image_name):
         print(f"Failed to download image: {image_url}")
 
 
-def scrape_book_links_from_category(category_url):
+def scrape_book_links_from_category(category_url: str) -> list:
     """
     Scrape all books from a given category page, including all subsequent pages.
     """
@@ -205,7 +207,7 @@ def scrape_book_links_from_category(category_url):
     return books_links
 
 
-def extract_books_data(books_links):
+def extract_books_data(books_links: list) -> list:
     """
     Extract product information for all books in the list of book links.
     """
@@ -225,7 +227,10 @@ def extract_books_data(books_links):
     return category_books_data
 
 
-def generate_unique_filename(category_link):
+def generate_unique_filename(category_link: str) -> str:
+    """
+    Extract the category from the link and use it for the folder name.
+    """
     # Parse the URL
     parsed_url = urlparse(category_link)
     # Get the path part of the URL
