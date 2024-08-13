@@ -221,7 +221,7 @@ def extract_books_data(books_links: list) -> list:
 
         # Download the image and save it locally
         image_url = product_info['image_url']
-        image_name = get_title(soup) + ".jpg"
+        image_name = get_title(soup) + "_" + product_info['universal_product_code'] + "_" + product_info['category'] + ".jpg"
         download_image(image_url, image_dir, image_name)
 
     return category_books_data
@@ -269,13 +269,10 @@ for cat_link in categories_div_links:
 
 for category_link in category_links:
     print(f"Scraping category: {category_link}")
+    # Step 1: Scrape all book links from the category
     all_cat_books = scrape_book_links_from_category(category_link)
-    # soup object passed as an argument to retrieve correct data
-    for book_link in all_cat_books:
-        book_soup = get_soup(book_link)
-        product_info = extract_product_info(book_soup)
-        category_books_data.append(product_info)
-    # Convert the data to a DataFrame
+    # Step 2: Extract product information for each book
+    category_books_data = extract_books_data(all_cat_books)
     df = pandas.DataFrame(category_books_data)
     filename = generate_unique_filename(category_link)
     save_csv_to_data_folder(df, filename)
