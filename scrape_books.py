@@ -151,7 +151,7 @@ def clean_filename(filename: str) -> str:
     """
     Replace or remove special characters from filenames that are not allowed in file paths.
     """
-    return re.sub(r'[\\/*?:"<>|]', "", filename)
+    return re.sub(r'[\\/*?:"<>|,]', "", filename)
 
 
 def download_image(image_url: str, save_dir: str, image_name: str) -> None:
