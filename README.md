@@ -33,7 +33,14 @@ This script is designed to scrape detailed information about books from an onlin
    cd ProjectBooksOnlineScraper
    ```
 
-3. Install the required Python libraries:
+3. Create and activate the virtual env:
+
+   ```bash
+   python -m venv env
+   source env/bin/activate
+   ```
+
+4. Install the required Python libraries:
 
    ```bash
    pip install -r requirements.txt
