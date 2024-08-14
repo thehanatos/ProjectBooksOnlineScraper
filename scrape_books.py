@@ -1,3 +1,5 @@
+#!/usr/bin/env python3.11.9
+
 """
 Phase 1: Extract the relevant data from the selected product page, capturing the following details:
 product_page_url, universal_product_code, title, price_including_tax, price_excluding_tax,
