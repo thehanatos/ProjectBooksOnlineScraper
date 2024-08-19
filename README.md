@@ -11,7 +11,7 @@ This script is designed to scrape detailed information about books from an onlin
 
 #### Requirements
 
-- Python 3.x
+- Python 3.11.9
 - Required Python libraries (install using `pip`):
   - `requests`
   - `beautifulsoup4`
