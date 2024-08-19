@@ -94,9 +94,8 @@ def extract_star_rating(soup: BeautifulSoup) -> str:
     """
     star_rating_p = soup.find("p", class_="star-rating")
     classes = star_rating_p["class"]
-    for class_name in classes:
-        if class_name != "star-rating":
-            review_rating = class_name + " stars"
+    class_name = classes[1]
+    review_rating = class_name + " stars"
     return review_rating
 
 
